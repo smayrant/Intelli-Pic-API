@@ -34,23 +34,21 @@ app.get("/", (req, res) => {
 
 app.post("/login", (req, res) => {
 	if (req.body.email === database.users[0].email && req.body.password === database.users[0].password) {
-		res.json("logged in");
+		res.json(database.users[0]);
 	} else {
-		res.status(400).json("error logging in");
+		res.status(400).json("Error logging in");
 	}
 });
 
+// the user's registration data is received from the body, password is hashed and the new user is stored within the DB
 app.post("/register", (req, res) => {
 	const saltRounds = 10;
 	const { name, email, password } = req.body;
-	bcrypt.hash(password, saltRounds, function (err, hash) {
-		console.log(hash);
-	});
+	bcrypt.hash(password, saltRounds, function (err, hash) {});
 	database.users.push({
 		id: "125",
 		name: name,
 		email: email,
-		password: password,
 		entries: 0,
 		joined: new Date()
 	});
