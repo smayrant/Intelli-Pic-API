@@ -2,6 +2,19 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
+const knex = require("knex");
+
+const db = knex({
+	client: "pg",
+	connection: {
+		host: "127.0.0.1",
+		user: "sheldrickmayrant",
+		password: "",
+		database: "face-recognizer"
+	}
+});
+
+console.log(db.select("*").from("users"));
 
 const app = express();
 app.use(bodyParser.json());
@@ -45,13 +58,13 @@ app.post("/register", (req, res) => {
 	const saltRounds = 10;
 	const { name, email, password } = req.body;
 	bcrypt.hash(password, saltRounds, function (err, hash) {});
-	database.users.push({
-		id: "125",
-		name: name,
-		email: email,
-		entries: 0,
-		joined: new Date()
-	});
+	db("users")
+		.insert({
+			email: email,
+			name: name,
+			joined: new Date()
+		})
+		.then(console.log);
 	res.json(database.users[database.users.length - 1]);
 });
 
