@@ -46,6 +46,9 @@ app.get("/", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
+	const saltRounds = 10;
+
+	bcrypt.hash(password, saltRounds, function (err, hash) {});
 	if (req.body.email === database.users[0].email && req.body.password === database.users[0].password) {
 		res.json(database.users[0]);
 	} else {
@@ -55,31 +58,37 @@ app.post("/login", (req, res) => {
 
 // the user's registration data is received from the body, password is hashed and the new user is stored within the DB
 app.post("/register", (req, res) => {
-	const saltRounds = 10;
 	const { name, email, password } = req.body;
-	bcrypt.hash(password, saltRounds, function (err, hash) {});
 	db("users")
+		.returning("*")
 		.insert({
 			email: email,
 			name: name,
 			joined: new Date()
 		})
-		.then(console.log);
-	res.json(database.users[database.users.length - 1]);
+		.then(user => {
+			res.json(user[0]);
+		})
+		.catch(err => res.status(400).json("Unable to register this user"));
 });
 
+// retrieve a user based on their id stored within the DB
 app.get("/profile/:id", (req, res) => {
 	const { id } = req.params;
-	let found = false;
-	database.users.forEach(user => {
-		if (user.id === id) {
-			found = true;
-			res.json(user);
-		}
-	});
-	if (!found) {
-		res.status(400).json("not found");
-	}
+	db
+		.select("*")
+		.from("users")
+		.where({
+			id: id
+		})
+		.then(user => {
+			if (user.length) {
+				res.json(user[0]);
+			} else {
+				res.status(400).json("User not found");
+			}
+		})
+		.catch(err => res.status(400).json("Error retrieving user"));
 });
 
 app.put("/image", (req, res) => {
